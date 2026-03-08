@@ -1,0 +1,84 @@
+<style>
+body{
+    background:#f4f4f4;
+    color:black;
+    transition:0.3s;
+}
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    background:linear-gradient(90deg,#6a11cb,#2575fc);
+    padding:12px 40px;
+    color:white;
+}
+
+.nav-links{
+    display:flex;
+    gap:20px;
+    align-items:center;
+}
+
+.nav-links a{
+    color:white;
+    text-decoration:none;
+    font-size:0.9rem;
+    font-weight:600;
+}
+
+.nav-links a:hover{
+    opacity:0.85;
+}
+
+/* Request badge wrapper */
+.req-link {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+}
+
+.req-badge {
+    position: absolute;
+    top: -7px;
+    right: -10px;
+    background: #ef4444;
+    color: #fff;
+    font-size: 0.62rem;
+    font-weight: 800;
+    width: 17px;
+    height: 17px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+}
+</style>
+
+<nav class="navbar">
+
+    <div class="logo">
+        💬 Name
+    </div>
+
+    <div class="nav-links">
+        <a href="/">🏠 Home</a>
+        <a href="/profile">👤 Profile</a>
+        <a href="/search">🔍 Search</a>
+
+        <!-- Requests link with red badge if pending -->
+        <a href="/requests" class="req-link">
+            🔔 Requests
+            <% if(typeof user !== 'undefined' && user.friendRequests && user.friendRequests.length > 0){ %>
+                <span class="req-badge"><%= user.friendRequests.length %></span>
+            <% } %>
+        </a>
+
+        <a href="/login" id="logoutLink">🚪 Logout</a>
+    </div>
+
+</nav>
+
+<script>
+</script>

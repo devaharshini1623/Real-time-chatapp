@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <title>Your Profile</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --purple:      #7c3aed;
+            --purple-mid:  #8b5cf6;
+            --purple-light:#ede9fe;
+            --purple-nav:  #6d28d9;
+            --bg:          #f3f4f6;
+            --card:        #ffffff;
+            --text:        #1f2937;
+            --muted:       #6b7280;
+            --border:      #e5e7eb;
+        }
+        * { box-sizing: border-box; }
+        body { background: var(--bg); color: var(--text); font-family: 'Nunito', sans-serif; min-height: 100vh; margin: 0; }
+
+        /* NAVBAR */
+        .navbar-custom {
+            background: linear-gradient(90deg, #6d28d9 0%, #7c3aed 60%, #8b5cf6 100%);
+            padding: 0 32px; height: 60px;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 10px rgba(109,40,217,.35);
+        }
+        .navbar-custom .brand {
+            display: flex; align-items: center; gap: 8px;
+            color: #fff; font-weight: 800; font-size: 1.1rem; text-decoration: none;
+        }
+        .brand-icon {
+            width: 28px; height: 28px; background: rgba(255,255,255,.25);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.9rem;
+        }
+        .navbar-custom nav { display: flex; align-items: center; gap: 2px; }
+        .navbar-custom nav a {
+            color: rgba(255,255,255,.85); text-decoration: none;
+            padding: 6px 11px; border-radius: 6px; font-size: 0.85rem; font-weight: 600;
+            display: flex; align-items: center; gap: 5px; transition: background .15s;
+        }
+        .navbar-custom nav a:hover, .navbar-custom nav a.active { background: rgba(255,255,255,.18); color: #fff; }
+        .navbar-custom nav a.btn-dark-mode { background: rgba(255,255,255,.15); border: 1px solid rgba(255,255,255,.3); }
+
+        /* PAGE */
+        .page-wrap { max-width: 660px; margin: 40px auto; padding: 0 16px; }
+
+        /* CARD */
+        .profile-card { background: var(--card); border-radius: 14px; box-shadow: 0 4px 24px rgba(124,58,237,.09); overflow: hidden; }
+        .card-header-band { background: linear-gradient(90deg, #6d28d9, #8b5cf6); height: 72px; }
+        .card-body-inner { padding: 0 32px 32px; }
+
+        /* AVATAR */
+        .avatar-zone { display: flex; align-items: flex-end; gap: 20px; margin-top: -38px; margin-bottom: 24px; }
+        .avatar-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; cursor: pointer; }
+        .avatar-wrap img {
+            width: 80px; height: 80px; border-radius: 50%; object-fit: cover;
+            border: 3px solid #fff; box-shadow: 0 2px 10px rgba(0,0,0,.15); display: block; transition: filter .2s;
+        }
+        .avatar-wrap:hover img { filter: brightness(0.6); }
+        .avatar-overlay {
+            position: absolute; inset: 0; border-radius: 50%;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            opacity: 0; transition: opacity .2s; font-size: 0.6rem; color: #fff; font-weight: 700; gap: 1px; pointer-events: none;
+        }
+        .avatar-wrap:hover .avatar-overlay { opacity: 1; }
+        .avatar-overlay span { font-size: 1rem; }
+        #avatarInput { display: none; }
+        .avatar-name { padding-bottom: 6px; }
+        .avatar-name h3 { font-size: 1.2rem; font-weight: 800; color: var(--text); margin: 0 0 2px; }
+        .avatar-name p  { font-size: 0.82rem; color: var(--muted); margin: 0; }
+
+        /* FIELD ROWS */
+        .field-row { display: flex; align-items: flex-start; padding: 13px 0; border-bottom: 1px solid var(--border); gap: 12px; }
+        .field-row:last-child { border-bottom: none; }
+        .field-label {
+            width: 80px; flex-shrink: 0; font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: .8px; color: var(--muted); padding-top: 3px;
+        }
+        .field-value {
+            flex: 1; font-size: 0.93rem; color: var(--text); font-weight: 600;
+            cursor: pointer; padding: 2px 6px; margin: -2px -6px; border-radius: 5px;
+            line-height: 1.5; transition: background .15s; word-break: break-word;
+        }
+        .field-value:hover { background: var(--purple-light); }
+        .field-value.placeholder { color: var(--muted); font-style: italic; font-weight: 400; }
+        .edit-hint { color: var(--purple-mid); font-size: 0.8rem; opacity: 0; transition: opacity .15s; cursor: pointer; align-self: center; }
+        .field-row:hover .edit-hint { opacity: 1; }
+
+        /* INLINE EDITOR */
+        .inline-editor { display: none; flex: 1; flex-direction: column; gap: 8px; }
+        .inline-editor.active { display: flex; }
+        .inline-editor input[type="text"],
+        .inline-editor textarea {
+            border: 1.5px solid var(--purple-mid); border-radius: 8px; padding: 8px 12px;
+            font-size: 0.93rem; font-family: 'Nunito', sans-serif; color: var(--text);
+            background: #faf9ff; outline: none; resize: vertical; width: 100%; transition: box-shadow .2s;
+        }
+        .inline-editor input:focus, .inline-editor textarea:focus { box-shadow: 0 0 0 3px rgba(124,58,237,.15); }
+        .editor-actions { display: flex; gap: 8px; }
+        .btn-save-field {
+            background: var(--purple); color: #fff; border: none;
+            padding: 6px 18px; border-radius: 6px; font-size: 0.82rem; font-weight: 700;
+            font-family: 'Nunito', sans-serif; cursor: pointer; transition: background .2s, transform .15s;
+        }
+        .btn-save-field:hover { background: var(--purple-nav); transform: translateY(-1px); }
+        .btn-cancel-field {
+            background: transparent; color: var(--muted); border: 1.5px solid var(--border);
+            padding: 6px 14px; border-radius: 6px; font-size: 0.82rem;
+            font-family: 'Nunito', sans-serif; cursor: pointer; transition: border-color .2s, color .2s;
+        }
+        .btn-cancel-field:hover { border-color: var(--muted); color: var(--text); }
+
+        /* ACTION BUTTONS */
+        .action-buttons { display: flex; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
+        .action-btn {
+            display: inline-flex; align-items: center; gap: 7px;
+            padding: 10px 22px; border-radius: 8px; font-size: 0.88rem; font-weight: 700;
+            font-family: 'Nunito', sans-serif; text-decoration: none; border: none; cursor: pointer;
+            transition: transform .15s, box-shadow .2s;
+        }
+        .action-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 14px rgba(124,58,237,.25); }
+        .btn-friends { background: var(--purple); color: #fff; }
+        .btn-upload  { background: #fff; color: var(--purple); border: 1.5px solid var(--purple-mid); }
+
+        /* TOAST */
+        #toast {
+            position: fixed; bottom: 24px; right: 24px;
+            background: var(--purple); color: #fff; padding: 10px 20px; border-radius: 8px;
+            font-size: 0.83rem; font-weight: 700; font-family: 'Nunito', sans-serif;
+            opacity: 0; transform: translateY(8px); transition: opacity .25s, transform .25s;
+            pointer-events: none; z-index: 9999; box-shadow: 0 4px 16px rgba(124,58,237,.35);
+        }
+        #toast.show { opacity: 1; transform: translateY(0); }
+    </style>
+</head>
+<body>
+
+<%- include("partials/navbar") %>
+
+<div class="page-wrap">
+    <div class="profile-card">
+        <div class="card-header-band"></div>
+        <div class="card-body-inner">
+
+            <div class="avatar-zone">
+                <div class="avatar-wrap" onclick="document.getElementById('avatarInput').click()">
+                    <img id="avatarImg" src="<%= user.profilePhoto %>" alt="Avatar">
+                    <div class="avatar-overlay"><span>📷</span>Change</div>
+                </div>
+                <input type="file" id="avatarInput" accept="image/*">
+                <div class="avatar-name">
+                    <h3 id="display-name"><%= user.username %></h3>
+                    <p id="display-email-sub"><%= user.email %></p>
+                </div>
+            </div>
+
+            <div class="field-row" id="row-username">
+                <div class="field-label">Username</div>
+                <div class="field-value" id="val-username" onclick="startEdit('username')"><%= user.username %></div>
+                <div class="inline-editor" id="edit-username">
+                    <input type="text" id="input-username" placeholder="Enter username">
+                    <div class="editor-actions">
+                        <button class="btn-save-field" onclick="saveField('username')">Save</button>
+                        <button class="btn-cancel-field" onclick="cancelEdit('username')">Cancel</button>
+                    </div>
+                </div>
+                <div class="edit-hint" onclick="startEdit('username')">✏️</div>
+            </div>
+
+            <div class="field-row" id="row-email">
+                <div class="field-label">Email</div>
+                <div class="field-value" id="val-email" onclick="startEdit('email')"><%= user.email %></div>
+                <div class="inline-editor" id="edit-email">
+                    <input type="text" id="input-email" placeholder="Enter email">
+                    <div class="editor-actions">
+                        <button class="btn-save-field" onclick="saveField('email')">Save</button>
+                        <button class="btn-cancel-field" onclick="cancelEdit('email')">Cancel</button>
+                    </div>
+                </div>
+                <div class="edit-hint" onclick="startEdit('email')">✏️</div>
+            </div>
+
+            <div class="field-row" id="row-bio">
+                <div class="field-label">Bio</div>
+                <div class="field-value placeholder" id="val-bio" onclick="startEdit('bio')">No bio yet — click to add</div>
+                <div class="inline-editor" id="edit-bio">
+                    <textarea id="input-bio" rows="3" placeholder="Write something about yourself…"></textarea>
+                    <div class="editor-actions">
+                        <button class="btn-save-field" onclick="saveField('bio')">Save</button>
+                        <button class="btn-cancel-field" onclick="cancelEdit('bio')">Cancel</button>
+                    </div>
+                </div>
+                <div class="edit-hint" onclick="startEdit('bio')">✏️</div>
+            </div>
+
+            <div class="field-row" id="row-about">
+                <div class="field-label">About</div>
+                <div class="field-value placeholder" id="val-about" onclick="startEdit('about')">No about yet — click to add</div>
+                <div class="inline-editor" id="edit-about">
+                    <textarea id="input-about" rows="4" placeholder="Tell your story…"></textarea>
+                    <div class="editor-actions">
+                        <button class="btn-save-field" onclick="saveField('about')">Save</button>
+                        <button class="btn-cancel-field" onclick="cancelEdit('about')">Cancel</button>
+                    </div>
+                </div>
+                <div class="edit-hint" onclick="startEdit('about')">✏️</div>
+            </div>
+
+        </div>
+    </div>
+
+    <div class="action-buttons">
+        <a href="/" class="action-btn btn-friends">👥 View Friends</a>
+        <a href="/upload" class="action-btn btn-upload">📤 Upload Post</a>
+    </div>
+</div>
+
+<div id="toast"></div>
+
+<script>
+    // Seeded from server — actual logged-in user's data
+    const USER_ID  = '<%= user._id %>';
+    const FIELDS = ['username','email','bio','about'];
+    const PLACEHOLDERS = { bio:'No bio yet — click to add', about:'No about yet — click to add' };
+    // Server values are the source of truth on first load
+    const SERVER = {
+        username: '<%= user.username %>',
+        email:    '<%= user.email %>',
+        bio:      '<%= user.bio || "" %>',
+        about:    '<%= user.about || "" %>'
+    };
+    // Namespace localStorage per user so different accounts don't share data
+    function lsKey(field) { return 'profile_' + USER_ID + '_' + field; }
+
+    function loadAll() {
+        FIELDS.forEach(f => {
+            const saved = localStorage.getItem(lsKey(f));
+            // Use localStorage if user has edited before, otherwise use server value
+            renderField(f, saved !== null ? saved : SERVER[f]);
+        });
+        const av = localStorage.getItem(lsKey('avatar'));
+        if (av) document.getElementById('avatarImg').src = av;
+    }
+
+    function renderField(field, value) {
+        const el = document.getElementById('val-'+field);
+        if (value && value.trim()) {
+            el.textContent = value; el.classList.remove('placeholder');
+        } else {
+            el.textContent = PLACEHOLDERS[field] || ''; el.classList.add('placeholder');
+        }
+        if (field === 'username') document.getElementById('display-name').textContent = value || SERVER.username;
+        if (field === 'email')    document.getElementById('display-email-sub').textContent = value || SERVER.email;
+    }
+
+    function startEdit(field) {
+        const val = document.getElementById('val-'+field);
+        const ed  = document.getElementById('edit-'+field);
+        const inp = document.getElementById('input-'+field);
+        inp.value = localStorage.getItem(lsKey(field)) || SERVER[field] || '';
+        val.style.display = 'none';
+        ed.classList.add('active');
+        inp.focus();
+        const hint = document.querySelector('#row-'+field+' .edit-hint');
+        if (hint) hint.style.display = 'none';
+    }
+
+    function saveField(field) {
+        const value = document.getElementById('input-'+field).value.trim();
+        localStorage.setItem(lsKey(field), value);
+        renderField(field, value);
+        collapseEditor(field);
+        showToast('Saved!');
+    }
+
+    function cancelEdit(field) { collapseEditor(field); }
+
+    function collapseEditor(field) {
+        document.getElementById('val-'+field).style.display = '';
+        document.getElementById('edit-'+field).classList.remove('active');
+        const hint = document.querySelector('#row-'+field+' .edit-hint');
+        if (hint) hint.style.display = '';
+    }
+
+    document.addEventListener('keydown', e => {
+        if (!e.target.closest('.inline-editor')) return;
+        const field = e.target.closest('.field-row').id.replace('row-','');
+        if (e.key === 'Escape') cancelEdit(field);
+        if (e.key === 'Enter' && e.target.tagName === 'INPUT') saveField(field);
+    });
+
+    document.getElementById('avatarInput').addEventListener('change', function() {
+        const file = this.files[0]; if (!file) return;
+        const reader = new FileReader();
+        reader.onload = e => {
+            document.getElementById('avatarImg').src = e.target.result;
+            localStorage.setItem(lsKey('avatar'), e.target.result);
+            showToast('Photo updated!');
+        };
+        reader.readAsDataURL(file);
+    });
+
+    let toastTimer;
+    function showToast(msg) {
+        const t = document.getElementById('toast');
+        t.textContent = '✓ ' + msg;
+        t.classList.add('show');
+        clearTimeout(toastTimer);
+        toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+    }
+
+    loadAll();
+</script>
+</body>
+</html>

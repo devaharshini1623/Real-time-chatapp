@@ -1,0 +1,487 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+<%- include("partials/navbar") %>
+
+<!-- Emoji Picker Web Component -->
+<script type="module" src="https://cdn.jsdelivr.net/npm/emoji-picker-element@1/index.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600&display=swap');
+
+*{ box-sizing:border-box; margin:0; padding:0; }
+
+body{
+    font-family:'DM Sans', sans-serif;
+    background:#f0e6ff;
+}
+
+.chat-container{
+    display:flex;
+    height:90vh;
+}
+
+/* FRIEND LIST */
+.friends{
+    width:30%;
+    border-right:1px solid #e0d0f5;
+    padding:16px;
+    overflow-y:auto;
+    background:white;
+}
+
+.friends h3{
+    font-size:16px;
+    font-weight:600;
+    margin-bottom:14px;
+    color:#333;
+}
+
+.friend{
+    display:flex;
+    align-items:center;
+    justify-content:space-between;
+    padding:8px 6px;
+    border-radius:10px;
+    margin-bottom:6px;
+    transition:background 0.15s;
+}
+
+.friend:hover{
+    background:#f5f0ff;
+}
+
+.friend img{
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    margin-right:10px;
+    object-fit:cover;
+}
+
+.friend-info{
+    display:flex;
+    align-items:center;
+    flex:1;
+}
+
+.friend span{
+    font-size:14px;
+    font-weight:500;
+}
+
+/* UNREAD BADGE */
+.badge{
+    display:none;
+    background:#e53935;
+    color:white;
+    border-radius:50%;
+    padding:2px 7px;
+    font-size:11px;
+    font-weight:700;
+    margin-left:6px;
+    min-width:20px;
+    text-align:center;
+}
+
+.friend button{
+    background:#7c3aed;
+    color:white;
+    border:none;
+    border-radius:8px;
+    padding:6px 12px;
+    font-size:13px;
+    cursor:pointer;
+    transition:background 0.15s;
+}
+
+.friend button:hover{
+    background:#6d28d9;
+}
+
+/* CHAT WINDOW */
+.chat-window{
+    width:70%;
+    display:flex;
+    flex-direction:column;
+    background:#faf7ff;
+    position:relative;
+}
+
+.chat-header{
+    padding:14px 16px;
+    border-bottom:1px solid #e0d0f5;
+    background:white;
+    font-size:15px;
+    font-weight:600;
+    color:#333;
+}
+
+.messages{
+    flex:1;
+    overflow-y:auto;
+    padding:16px;
+    display:flex;
+    flex-direction:column;
+    gap:6px;
+}
+
+/* MESSAGE BUBBLES */
+.message{
+    max-width:60%;
+    padding:9px 13px;
+    border-radius:16px;
+    font-size:14px;
+    line-height:1.4;
+    word-break:break-word;
+}
+
+.sent{
+    background:#7c3aed;
+    color:white;
+    margin-left:auto;
+    border-bottom-right-radius:4px;
+}
+
+.received{
+    background:#e8e0f5;
+    color:#222;
+    border-bottom-left-radius:4px;
+}
+
+.time{
+    font-size:10px;
+    opacity:0.65;
+    margin-top:3px;
+}
+
+/* INPUT AREA */
+.input-area{
+    display:flex;
+    align-items:center;
+    padding:12px 16px;
+    border-top:1px solid #e0d0f5;
+    background:white;
+    gap:8px;
+    position:relative;
+}
+
+.input-area input{
+    flex:1;
+    padding:9px 14px;
+    border:1px solid #ddd;
+    border-radius:20px;
+    font-size:14px;
+    font-family:'DM Sans', sans-serif;
+    outline:none;
+    transition:border 0.15s;
+}
+
+.input-area input:focus{
+    border-color:#7c3aed;
+}
+
+.input-area button{
+    background:#7c3aed;
+    color:white;
+    border:none;
+    border-radius:20px;
+    padding:9px 18px;
+    font-size:14px;
+    font-family:'DM Sans', sans-serif;
+    cursor:pointer;
+    transition:background 0.15s;
+}
+
+.input-area button:hover{
+    background:#6d28d9;
+}
+
+.emoji-btn{
+    background:none !important;
+    font-size:22px;
+    padding:0 4px !important;
+    cursor:pointer;
+    border:none;
+    line-height:1;
+    transition:transform 0.15s;
+}
+
+.emoji-btn:hover{
+    transform:scale(1.2);
+}
+
+/* EMOJI PICKER POPUP */
+.emoji-picker-wrapper{
+    position:absolute;
+    bottom:70px;
+    left:12px;
+    z-index:1000;
+    display:none;
+    box-shadow:0 8px 32px rgba(124,58,237,0.18);
+    border-radius:16px;
+    overflow:hidden;
+    border:1.5px solid #e0d0f5;
+    background:white;
+}
+
+.emoji-picker-wrapper.open{
+    display:block;
+    animation:popUp 0.18s ease;
+}
+
+@keyframes popUp{
+    from{ opacity:0; transform:translateY(10px) scale(0.96); }
+    to{ opacity:1; transform:translateY(0) scale(1); }
+}
+
+/* Style the emoji-picker-element */
+emoji-picker{
+    --background:#ffffff;
+    --border-color:#e0d0f5;
+    --button-active-background:#f0e6ff;
+    --button-hover-background:#f5f0ff;
+    --category-emoji-padding:0.35rem;
+    --emoji-padding:0.35rem;
+    --emoji-size:1.4rem;
+    --indicator-color:#7c3aed;
+    --input-border-color:#e0d0f5;
+    --input-font-color:#333;
+    --input-placeholder-color:#aaa;
+    --num-columns:8;
+    --outline-color:#7c3aed;
+    width:320px;
+    height:380px;
+}
+
+/* DARK MODE */
+body.dark{ background:#121212; color:#eee; }
+body.dark .friends{ background:#1a1a2e; border-color:#333; }
+body.dark .friends h3{ color:#ddd; }
+body.dark .friend:hover{ background:#252540; }
+body.dark .chat-window{ background:#0f0f1a; }
+body.dark .chat-header{ background:#1a1a2e; border-color:#333; color:#eee; }
+body.dark .received{ background:#2a2a3e; color:#eee; }
+body.dark .input-area{ background:#1a1a2e; border-color:#333; }
+body.dark .input-area input{ background:#252540; border-color:#444; color:#eee; }
+body.dark .emoji-picker-wrapper{ border-color:#333; box-shadow:0 8px 32px rgba(0,0,0,0.5); }
+body.dark emoji-picker{
+    --background:#1a1a2e;
+    --border-color:#333;
+    --button-active-background:#252540;
+    --button-hover-background:#2a2a3e;
+    --input-font-color:#eee;
+    --input-placeholder-color:#777;
+    --indicator-color:#a78bfa;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="chat-container">
+
+    <!-- FRIEND LIST -->
+    <div class="friends">
+        <h3>Friends</h3>
+        <% friends.forEach(friend=>{ %>
+        <div class="friend">
+            <div class="friend-info">
+                <img src="<%= friend.profilePhoto %>">
+                <span><%= friend.username || friend.name %></span>
+                <span class="badge" id="badge-<%= friend._id %>">0</span>
+            </div>
+            <button onclick="openChat('<%= friend._id %>','<%= friend.username || friend.name %>')">
+                Chat
+            </button>
+        </div>
+        <% }) %>
+    </div>
+
+    <!-- CHAT WINDOW -->
+    <div class="chat-window">
+        <div class="chat-header" id="chatWith">Select a friend to start chatting</div>
+        <div id="messages" class="messages"></div>
+
+        <div class="input-area">
+            <!-- Emoji Picker Popup -->
+            <div class="emoji-picker-wrapper" id="emojiPickerWrapper">
+                <emoji-picker id="emojiPicker"></emoji-picker>
+            </div>
+
+            <!-- Emoji Toggle Button -->
+            <button class="emoji-btn" id="emojiToggleBtn" onclick="toggleEmojiPicker()" title="Pick an emoji">😊</button>
+
+            <input id="messageInput" placeholder="Type a message...">
+            <button onclick="sendMessage()">Send</button>
+        </div>
+    </div>
+
+</div>
+
+<script src="/socket.io/socket.io.js"></script>
+
+<script>
+const socket = io();
+let currentFriend = null;
+const userId = "<%= user._id %>";
+
+// Unread counts stored in memory only
+let unreadCounts = {};
+
+// ── Emoji Picker ──────────────────────────────────────────────────────────────
+const emojiPickerWrapper = document.getElementById("emojiPickerWrapper");
+const emojiPicker = document.getElementById("emojiPicker");
+const messageInput = document.getElementById("messageInput");
+
+function toggleEmojiPicker(){
+    emojiPickerWrapper.classList.toggle("open");
+}
+
+// Insert emoji into input on selection
+emojiPicker.addEventListener("emoji-click", (event) => {
+    const emoji = event.detail.unicode;
+    const start = messageInput.selectionStart;
+    const end = messageInput.selectionEnd;
+    const current = messageInput.value;
+    // Insert emoji at cursor position
+    messageInput.value = current.slice(0, start) + emoji + current.slice(end);
+    // Move cursor after inserted emoji
+    const newPos = start + emoji.length;
+    messageInput.setSelectionRange(newPos, newPos);
+    messageInput.focus();
+});
+
+// Close picker when clicking outside
+document.addEventListener("click", (e) => {
+    if(
+        !emojiPickerWrapper.contains(e.target) &&
+        e.target.id !== "emojiToggleBtn"
+    ){
+        emojiPickerWrapper.classList.remove("open");
+    }
+});
+
+// ── Badges ────────────────────────────────────────────────────────────────────
+function restoreBadges(){
+    for(const friendId in unreadCounts){
+        const count = unreadCounts[friendId];
+        const badge = document.getElementById("badge-" + friendId);
+        if(badge && count > 0){
+            badge.innerText = count;
+            badge.style.display = "inline";
+        }
+    }
+}
+
+function incrementBadge(friendId){
+    unreadCounts[friendId] = (unreadCounts[friendId] || 0) + 1;
+    const badge = document.getElementById("badge-" + friendId);
+    if(badge){
+        badge.innerText = unreadCounts[friendId];
+        badge.style.display = "inline";
+    }
+}
+
+function clearBadge(friendId){
+    unreadCounts[friendId] = 0;
+    const badge = document.getElementById("badge-" + friendId);
+    if(badge){
+        badge.innerText = "0";
+        badge.style.display = "none";
+    }
+}
+
+// ── Messages ──────────────────────────────────────────────────────────────────
+async function fetchMessages(friendId){
+    try {
+        const res = await fetch(`/auth/messages/${friendId}`);
+        if(!res.ok) throw new Error("Failed to fetch messages");
+        const messages = await res.json();
+        const box = document.getElementById("messages");
+        box.innerHTML = "";
+
+        messages.forEach(data => {
+            const div = document.createElement("div");
+            div.classList.add("message");
+            div.classList.add(data.sender === userId ? "sent" : "received");
+            const time = new Date(data.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+            div.innerHTML = escapeHTML(data.text) + `<div class='time'>${time}</div>`;
+            box.appendChild(div);
+        });
+
+        box.scrollTop = box.scrollHeight;
+    } catch(err) {
+        console.log("Error loading messages:", err);
+    }
+}
+
+function escapeHTML(str){
+    return str
+        .replace(/&/g,"&amp;")
+        .replace(/</g,"&lt;")
+        .replace(/>/g,"&gt;")
+        .replace(/"/g,"&quot;");
+}
+
+function openChat(id, name){
+    currentFriend = id;
+    document.getElementById("chatWith").innerText = "Chat with " + name;
+    clearBadge(id);
+    emojiPickerWrapper.classList.remove("open");
+    fetchMessages(id);
+}
+
+function sendMessage(){
+    const text = messageInput.value.trim();
+    if(!text || !currentFriend) return;
+    socket.emit("sendMessage", {
+        sender: userId,
+        receiver: currentFriend,
+        text: text
+    });
+    messageInput.value = "";
+    emojiPickerWrapper.classList.remove("open");
+}
+
+// Send on Enter key
+messageInput.addEventListener("keydown", function(e){
+    if(e.key === "Enter") sendMessage();
+});
+
+// Receive live messages
+socket.on("receiveMessage", (data) => {
+    const isMyMessage = data.sender === userId && data.receiver === currentFriend;
+    const isFriendMessage = data.sender === currentFriend && data.receiver === userId;
+
+    if(data.receiver === userId && data.sender !== currentFriend){
+        incrementBadge(data.sender);
+        return;
+    }
+
+    if(!isMyMessage && !isFriendMessage) return;
+
+    const box = document.getElementById("messages");
+    const div = document.createElement("div");
+    div.classList.add("message");
+    div.classList.add(data.sender === userId ? "sent" : "received");
+    const time = new Date(data.time).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'});
+    div.innerHTML = escapeHTML(data.text) + `<div class='time'>${time}</div>`;
+    box.appendChild(div);
+    box.scrollTop = box.scrollHeight;
+});
+
+// Dark mode toggle
+function toggleMode(){
+    document.body.classList.toggle("dark");
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+    restoreBadges();
+});
+</script>
+
+</body>
+</html>

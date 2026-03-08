@@ -1,0 +1,226 @@
+const User = require('../models/user');
+const bcrypt = require('bcrypt');
+const jwt = require('jsonwebtoken');
+
+const SECRET = "secret123";
+
+exports.registerUser = async (req,res)=>{
+    try{
+
+        const {name,email,password} = req.body;
+
+        const hashedPassword = await bcrypt.hash(password,10);
+
+        const user = new User({
+            name,
+            email,
+            password:hashedPassword
+        });
+
+        await user.save();
+
+        res.redirect('/login');
+
+    }catch(err){
+    console.log(err);   // print error in terminal
+    res.send("Error registering user");
+    }
+};
+
+exports.loginUser = async (req,res)=>{
+    try{
+
+        const {email,password} = req.body;
+
+        const user = await User.findOne({email});
+
+        if(!user){
+            return res.send("User not found");
+        }
+
+        const match = await bcrypt.compare(password,user.password);
+
+        if(!match){
+            return res.send("Invalid password");
+        }
+
+        const token = jwt.sign({id:user._id},SECRET);
+
+        res.cookie("token",token);
+
+        res.redirect('/profile');
+
+    }catch(err){
+        res.send("Login error");
+    }
+};
+
+
+exports.updateProfile = async (req,res)=>{
+
+    const {username,bio} = req.body;
+
+    const updateData = {
+        username,
+        bio
+    };
+
+    if(req.file){
+        updateData.profilePhoto = "/images/" + req.file.filename;
+    }
+
+    await User.findByIdAndUpdate(req.user.id,updateData);
+
+    res.redirect('/profile');
+};
+
+exports.logoutUser = (req,res)=>{
+    res.clearCookie("token");
+    res.redirect('/login');
+}
+
+
+
+
+exports.addFriend = async (req,res)=>{
+
+    const friendId = req.params.id;
+    const userId = req.user.id;
+
+    try{
+
+        if(friendId === userId){
+            return res.send("You cannot add yourself");
+        }
+
+        const user = await User.findById(userId);
+
+        if(user.friends.includes(friendId)){
+            return res.send("Already friends");
+        }
+
+        user.friends.push(friendId);
+        await user.save();
+
+        res.redirect('/search?q=');
+
+    }catch(err){
+        res.send("Error adding friend");
+    }
+};
+
+
+exports.sendRequest = async (req, res) => {
+    try {
+        const toId   = req.params.id;
+        const fromId = req.user.id;
+
+        if (toId === fromId) return res.send("Cannot send request to yourself");
+
+        const toUser   = await User.findById(toId);
+        const fromUser = await User.findById(fromId);
+
+        if (!toUser) return res.send("User not found");
+
+        // Already friends?
+        if (fromUser.friends.includes(toId)) return res.send("Already friends");
+
+        // Request already sent?
+        if (toUser.friendRequests.includes(fromId)) return res.send("Request already sent");
+
+        toUser.friendRequests.push(fromId);
+        await toUser.save();
+
+        res.redirect('/search?q=');
+
+    } catch(err) {
+        console.log(err);
+        res.send("Error sending request");
+    }
+};
+
+// Accept a friend request from user with :id
+exports.acceptRequest = async (req, res) => {
+    try {
+        const fromId = req.params.id;   // person who sent the request
+        const myId   = req.user.id;     // logged-in user (receiver)
+
+        const me   = await User.findById(myId);
+        const them = await User.findById(fromId);
+
+        if (!me || !them) return res.send("User not found");
+
+        // Remove from my friendRequests
+        me.friendRequests = me.friendRequests.filter(id => id.toString() !== fromId);
+
+        // Add each other as friends (if not already)
+        if (!me.friends.includes(fromId))   me.friends.push(fromId);
+        if (!them.friends.includes(myId)) them.friends.push(myId);
+
+        await me.save();
+        await them.save();
+
+        res.redirect('/requests');
+
+    } catch(err) {
+        console.log(err);
+        res.send("Error accepting request");
+    }
+};
+
+// Reject a friend request from user with :id
+exports.rejectRequest = async (req, res) => {
+    try {
+        const fromId = req.params.id;
+        const myId   = req.user.id;
+
+        const me = await User.findById(myId);
+        if (!me) return res.send("User not found");
+
+        me.friendRequests = me.friendRequests.filter(id => id.toString() !== fromId);
+        await me.save();
+
+        res.redirect('/requests');
+
+    } catch(err) {
+        console.log(err);
+        res.send("Error rejecting request");
+    }
+};
+
+// Show the requests page
+exports.getRequestsPage = async (req, res) => {
+    try {
+        const me = await User.findById(req.user.id).populate('friendRequests');
+        res.render('requests', { user: me, requests: me.friendRequests });
+    } catch(err) {
+        console.log(err);
+        res.send("Error loading requests");
+    }
+};
+
+
+
+
+
+const Message = require('../models/Message');
+
+exports.getMessages = async (req, res) => {
+    try {
+        const userId = req.user.id;
+        const friendId = req.params.friendId;
+
+        const messages = await Message.find({
+            $or: [
+                { sender: userId, receiver: friendId },
+                { sender: friendId, receiver: userId }
+            ]
+        }).sort({ createdAt: 1 }); // oldest first
+
+        res.json(messages);
+
+    } catch (err) {
+        console.log(err);
+        res.json([]);
+    }
+};

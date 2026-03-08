@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Create Account</title>
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: #f5f4fb;
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 24px;
+    }
+
+    body::before, body::after {
+      content: '';
+      position: fixed;
+      border-radius: 50%;
+      filter: blur(90px);
+      opacity: 0.15;
+      pointer-events: none;
+      z-index: 0;
+    }
+    body::before {
+      width: 500px; height: 500px;
+      background: #7c3aed;
+      top: -140px; right: -100px;
+    }
+    body::after {
+      width: 350px; height: 350px;
+      background: #a855f7;
+      bottom: -100px; left: -80px;
+    }
+
+    .card {
+      position: relative;
+      z-index: 1;
+      background: #fff;
+      border: 1px solid #e8e4f5;
+      border-radius: 22px;
+      padding: 44px 40px 38px;
+      width: 100%;
+      max-width: 440px;
+      box-shadow: 0 8px 48px rgba(108, 63, 207, 0.09);
+      animation: rise 0.55s cubic-bezier(.22,.68,0,1.15) both;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(28px) scale(0.96); }
+      to   { opacity: 1; transform: translateY(0) scale(1); }
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 30px;
+      animation: fadeIn 0.4s 0.1s ease both;
+    }
+
+    .brand-icon {
+      width: 40px; height: 40px;
+      background: linear-gradient(135deg, #7c3aed, #a855f7);
+      border-radius: 12px;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 1.2rem;
+      box-shadow: 0 4px 14px rgba(124,58,237,0.3);
+    }
+
+    .brand-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.2rem;
+      color: #1a1a2e;
+      letter-spacing: -0.02em;
+    }
+
+    .heading {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.8rem;
+      font-weight: 800;
+      color: #1a1a2e;
+      letter-spacing: -0.03em;
+      line-height: 1.15;
+      margin-bottom: 5px;
+      animation: fadeIn 0.4s 0.15s ease both;
+    }
+
+    .subtext {
+      font-size: 0.88rem;
+      color: #9b97b2;
+      margin-bottom: 30px;
+      animation: fadeIn 0.4s 0.2s ease both;
+    }
+
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .field {
+      margin-bottom: 16px;
+      animation: fadeIn 0.4s ease both;
+    }
+
+    .field:nth-child(1) { animation-delay: 0.25s; }
+    .field:nth-child(2) { animation-delay: 0.32s; }
+    .field:nth-child(3) { animation-delay: 0.39s; }
+
+    label {
+      display: block;
+      font-size: 0.75rem;
+      font-weight: 600;
+      color: #6b6880;
+      letter-spacing: 0.07em;
+      text-transform: uppercase;
+      margin-bottom: 7px;
+    }
+
+    .input-wrap {
+      position: relative;
+    }
+
+    .input-icon {
+      position: absolute;
+      left: 14px;
+      top: 50%;
+      transform: translateY(-50%);
+      font-size: 1rem;
+      pointer-events: none;
+      opacity: 0.5;
+    }
+
+    input[type="text"],
+    input[type="email"],
+    input[type="password"] {
+      width: 100%;
+      background: #f9f8ff;
+      border: 1.5px solid #e3dff5;
+      border-radius: 11px;
+      padding: 13px 16px 13px 40px;
+      font-size: 0.95rem;
+      font-family: 'DM Sans', sans-serif;
+      color: #1a1a2e;
+      outline: none;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
+    }
+
+    input::placeholder { color: #c4bfe0; }
+
+    input:focus {
+      background: #fff;
+      border-color: #7c3aed;
+      box-shadow: 0 0 0 3.5px rgba(124, 58, 237, 0.12);
+    }
+
+    /* Password strength bar */
+    .strength-bar {
+      display: flex;
+      gap: 5px;
+      margin-top: 8px;
+      height: 3px;
+    }
+
+    .strength-bar span {
+      flex: 1;
+      border-radius: 99px;
+      background: #ece9f8;
+      transition: background 0.3s;
+    }
+
+    .strength-label {
+      font-size: 0.72rem;
+      color: #c4bfe0;
+      margin-top: 5px;
+      transition: color 0.3s;
+    }
+
+    /* strength levels */
+    .strength-bar.weak   span:nth-child(1)                       { background: #f87171; }
+    .strength-bar.fair   span:nth-child(1),
+    .strength-bar.fair   span:nth-child(2)                       { background: #fb923c; }
+    .strength-bar.good   span:nth-child(1),
+    .strength-bar.good   span:nth-child(2),
+    .strength-bar.good   span:nth-child(3)                       { background: #facc15; }
+    .strength-bar.strong span                                    { background: #4ade80; }
+
+    .btn-register {
+      width: 100%;
+      background: linear-gradient(135deg, #7c3aed 0%, #9333ea 100%);
+      color: #fff;
+      border: none;
+      border-radius: 11px;
+      padding: 14px;
+      font-size: 0.95rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      cursor: pointer;
+      margin-top: 8px;
+      transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+      box-shadow: 0 4px 18px rgba(124, 58, 237, 0.28);
+      animation: fadeIn 0.4s 0.48s ease both;
+    }
+
+    .btn-register:hover {
+      opacity: 0.91;
+      transform: translateY(-1px);
+      box-shadow: 0 6px 26px rgba(124, 58, 237, 0.36);
+    }
+
+    .btn-register:active { transform: translateY(0); }
+
+    /* ripple on click */
+    .btn-register {
+      position: relative;
+      overflow: hidden;
+    }
+
+    .btn-register::after {
+      content: '';
+      position: absolute;
+      width: 0; height: 0;
+      background: rgba(255,255,255,0.25);
+      border-radius: 50%;
+      top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      transition: width 0.4s ease, height 0.4s ease, opacity 0.4s;
+      opacity: 0;
+    }
+
+    .btn-register:active::after {
+      width: 300px; height: 300px;
+      opacity: 0;
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin: 26px 0 22px;
+      color: #d4d0e8;
+      font-size: 0.8rem;
+      animation: fadeIn 0.4s 0.52s ease both;
+    }
+
+    .divider::before, .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: #ece9f8;
+    }
+
+    .login-cta {
+      text-align: center;
+      font-size: 0.88rem;
+      color: #9b97b2;
+      animation: fadeIn 0.4s 0.56s ease both;
+    }
+
+    .login-cta a {
+      color: #7c3aed;
+      font-weight: 600;
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .login-cta a:hover {
+      color: #6d28d9;
+      text-decoration: underline;
+    }
+
+    /* Terms */
+    .terms {
+      font-size: 0.75rem;
+      color: #c4bfe0;
+      text-align: center;
+      margin-top: 16px;
+      animation: fadeIn 0.4s 0.6s ease both;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="card">
+
+    <div class="brand">
+      <div class="brand-icon">💬</div>
+      <span class="brand-name">Name</span>
+    </div>
+
+    <h1 class="heading">Create account</h1>
+    <p class="subtext">Join and start chatting instantly.</p>
+
+    <form action="/auth/register" method="POST">
+
+      <div class="field">
+        <label for="name">Full Name</label>
+        <div class="input-wrap">
+          <span class="input-icon">👤</span>
+          <input type="text" id="name" name="name" placeholder="Your name" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="email">Email</label>
+        <div class="input-wrap">
+          <span class="input-icon">✉️</span>
+          <input type="email" id="email" name="email" placeholder="you@example.com" required>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="password">Password</label>
+        <div class="input-wrap">
+          <span class="input-icon">🔒</span>
+          <input type="password" id="password" name="password" placeholder="Min. 6 characters" required>
+        </div>
+        <!-- Password strength bar -->
+        <div class="strength-bar" id="strengthBar">
+          <span></span><span></span><span></span><span></span>
+        </div>
+        <div class="strength-label" id="strengthLabel"></div>
+      </div>
+
+      <button class="btn-register" type="submit">Create Account</button>
+
+    </form>
+
+    <div class="divider">or</div>
+
+    <p class="login-cta">
+      Already have an account? <a href="/login">Sign in</a>
+    </p>
+
+    <p class="terms">By signing up, you agree to our Terms &amp; Privacy Policy.</p>
+
+  </div>
+
+  <script>
+    const passwordInput = document.getElementById('password');
+    const bar           = document.getElementById('strengthBar');
+    const label         = document.getElementById('strengthLabel');
+
+    const levels = [
+      { cls: '',       text: '' },
+      { cls: 'weak',   text: 'Weak' },
+      { cls: 'fair',   text: 'Fair' },
+      { cls: 'good',   text: 'Good' },
+      { cls: 'strong', text: 'Strong 💪' },
+    ];
+
+    const colors = ['', '#f87171', '#fb923c', '#facc15', '#4ade80'];
+
+    passwordInput.addEventListener('input', () => {
+      const val = passwordInput.value;
+      let score = 0;
+
+      if (val.length >= 6)               score++;
+      if (val.length >= 10)              score++;
+      if (/[A-Z]/.test(val) && /[0-9]/.test(val)) score++;
+      if (/[^A-Za-z0-9]/.test(val))     score++;
+
+      bar.className = 'strength-bar ' + (val.length ? levels[score].cls : '');
+      label.textContent = val.length ? levels[score].text : '';
+      label.style.color = val.length ? colors[score] : '#c4bfe0';
+    });
+  </script>
+
+</body>
+</html>
