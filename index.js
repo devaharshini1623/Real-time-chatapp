@@ -5,10 +5,10 @@ const connectDB = require('./connect');
 const http = require('http');
 const { Server } = require('socket.io');
 
-const Message = require('./models/Message'); // ⭐ added
+const Message = require('./models/Message'); 
 
 const app = express();
-const port = 8000;
+
 
 const server = http.createServer(app);
 const io = new Server(server);
@@ -68,6 +68,8 @@ io.on("connection",(socket)=>{
 });
 
 
-server.listen(port,()=>{
-    console.log(`Server running on port ${port}`);
+const PORT = process.env.PORT || 8000;
+
+server.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
 });
