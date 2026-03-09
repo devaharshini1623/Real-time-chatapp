@@ -2,10 +2,12 @@ const router = require('express').Router();
 const authMiddleware = require('../middlewares/authMiddleware');
 const User = require('../models/user');
 
-
+router.get('/', (req,res)=>{
+    res.redirect('/login');
+});
 // HOME PAGE (CHAT PAGE)
 
-router.get('/', authMiddleware, async (req,res)=>{
+router.get('/chat', authMiddleware, async (req,res)=>{
 
     try{
 
@@ -190,5 +192,6 @@ router.post('/cancelRequest/:id', authMiddleware, async (req, res) => {
     res.send("Error cancelling request");
   }
 });
+
 
 module.exports = router;
