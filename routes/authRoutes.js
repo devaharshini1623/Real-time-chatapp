@@ -2,9 +2,7 @@ const router = require('express').Router();
 const authController = require('../controllers/authController');
 const upload = require('../middlewares/upload');
 const authMiddleware = require('../middlewares/authMiddleware');
-app.get("/", (req, res) => {
-    res.redirect("/login");
-});
+;
 // Register
 router.post('/register', authController.registerUser);
 
@@ -43,3 +41,4 @@ router.get('/messages/:friendId',
 
 
 module.exports = router;
+
